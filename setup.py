@@ -19,16 +19,16 @@ def __extra_compile_args():
     if platform.system() == 'Darwin':
         extra_compile_args = ["-std=c++14"]
     else:
-        extra_compile_args = ["-fopenmp", "-std=c++14"]
+        extra_compile_args = ["-fopenmp", "-std=c++14", "-O3"]
     return extra_compile_args
 
 
 def __extra_link_args():
     extra_link_args = []
     if platform.system() != 'Darwin':
-        extra_link_args = ["-lgomp", "-lm", "-lrt"]
+        extra_link_args = ["-lgomp", "-lm", "-lrt", "-lpthread", "-lz",  "-lbz2"]
     return extra_link_args
-
+# -O3 -DNDEBUG -W -Wall -pedantic -fopenmp -lpthread -lrt
 
 sources_list = ['src/hicbuildmatrix_interface.cpp', 'src/hicbuildmatrix.cpp']
 depends_list = ['src/hicbuildmatrix.hpp']

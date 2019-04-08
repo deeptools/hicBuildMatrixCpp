@@ -3,4 +3,4 @@
 
 import hicBuildMatrixCpp
 
-hicBuildMatrixCpp.buildMatrix('foo', 'foo2')
+hicBuildMatrixCpp.buildMatrix('R1.sam', 'R2.sam')

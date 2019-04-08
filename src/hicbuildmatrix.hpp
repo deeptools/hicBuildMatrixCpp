@@ -1,11 +1,16 @@
 #ifndef HICBUILDMATRIX_HPP
 #define HICBUILDMATRIX_HPP
 
-#include <omp.h>
+// #include <omp.h>
 
 #include <iostream>
 #include <string>
 #include <seqan/bam_io.h>
+// #include <seqan/file.h>
+// using namespace seqan;
+// #include <iostream>
+#include <seqan/sequence.h>
+#include <seqan/seq_io.h>
 
 class HiCBuildMatrix
 {
