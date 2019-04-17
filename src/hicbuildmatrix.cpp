@@ -6,20 +6,59 @@ HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::strin
 }
 
 size_t HiCBuildMatrix::readBamFile() {
+    
    // Open input stream, BamStream can read SAM and BAM files.
-    seqan::BamStream bamStreamIn("R1.sam");
+    seqan::BamStream bamStreamIn1("R1.sam");
+    seqan::BamStream bamStreamIn2("R2.sam");
+    int duplicated_pairs = 0;
+    int one_mate_unmapped = 0;
+    int one_mate_not_unique = 0;
+    int one_mate_low_quality = 0;
+    bool  all_data_read=1;
+    if (!isGood(bamStreamIn1))
+    {
+        std::cerr << "ERROR: Could not open the first file!\n";
+        return 1;
+    }
+     else if (!isGood(bamStreamIn2))
+    {
+        std::cerr << "ERROR: Could not open the second file!\n";
+        return 1;
+    }
+    
     // Open output stream, "-" means stdin on if reading, else stdout.
-    seqan::BamStream bamStreamOut("-", seqan::BamStream::WRITE);
+    seqan::BamStream bamStreamOut1("-", seqan::BamStream::WRITE);
+    seqan::BamStream bamStreamOut2("-", seqan::BamStream::WRITE);
+  
     // Copy header.  The header is automatically written out before
     // the first record.
-    bamStreamOut.header = bamStreamIn.header;
+    bamStreamOut1.header = bamStreamIn1.header;
+    bamStreamOut2.header = bamStreamIn2.header;
 
-    seqan::BamAlignmentRecord record;
-    while (!atEnd(bamStreamIn))
+    seqan::BamAlignmentRecord record1;
+ seqan::BamAlignmentRecord record2;
+    while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
     {
-        readRecord(record, bamStreamIn);
-        writeRecord(bamStreamOut, record);
+        readRecord(record1, bamStreamIn1);
+        while ((hasFlagAllProper(record1)==1) & 256 == 256) {
+            readRecord(record1, bamStreamIn1);
+            
+        }
+          all_data_read =1;
+            break; 
+        readRecord(record2, bamStreamIn2);
+        while ((hasFlagAllProper(record2)==1 & 256 == 256) {
+            readRecord(record2, bamStreamIn1);    
+        }
+        all_data_read = 1;
+            break; 
+
+        // writeRecord(bamStreamOut1, record1);
     }
+    //  while (!atEnd(bamStreamIn2))
+    // {
+        // writeRecord(bamStreamOut2, record2);
+    // }
     
     return 0;
 }
