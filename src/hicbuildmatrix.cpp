@@ -47,18 +47,25 @@ size_t HiCBuildMatrix::readBamFile() {
           all_data_read =1;
             break; 
         readRecord(record2, bamStreamIn2);
-        while ((hasFlagAllProper(record2)==1 & 256 == 256) {
+        while ((hasFlagAllProper(record2)==1)  & 256 == 256) {
             readRecord(record2, bamStreamIn1);    
         }
         all_data_read = 1;
             break; 
 
-        // writeRecord(bamStreamOut1, record1);
     }
-    //  while (!atEnd(bamStreamIn2))
-    // {
-        // writeRecord(bamStreamOut2, record2);
-    // }
+assert(record1.qName == record2.qName && "Be sure that the sam files have the same read order ");
+// if any of the reads is not mapped
+   if(((hasFlagAllProper(record1)==1) && 0x4 == 4)|| ((hasFlagAllProper(record2)==1) && 0x4 == 4)){
+       one_mate_unmapped += 1;
+   }
+   // if the read quality is low, higher probabilities of error
+    if(record1.mapQ < pMinMappingQuality || record2.mapQ < pMinMappingQuality){
+        if(record1.mapQ ==0 && record2.mapQ==0) {
+            one_mate_not_unique += 1;
+        }
+    }
     
-    return 0;
+    return 0; 
 }
+
