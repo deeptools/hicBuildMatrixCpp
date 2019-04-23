@@ -4,7 +4,28 @@ HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::strin
     mForwardRead = pForwardRead;
     mReverseRead = pReverseRead;
 }
-
+std::set<string> pos_matrix;
+bool HiCBuildMatrix::is_duplicacted(chrom1, start1, chrom2, start2) {
+    if(chrom1< chrom2) {
+        string id_string= Format("___ - ___", "chrom1","chrom2");
+    }
+    else {
+        string id_string=Format("___ - ___", "chrom2","chrom1");
+    }
+    if (start1 < start2){
+        string id_string= Format("___ - ___", start1,start2);
+    }
+    else {
+         string id_string= Format("___ - ___", start2,start1);
+    }
+    if (pos_matrix.count(id_string)) {
+        return 1;
+   // id_string is in the set, count is 1
+} else {
+    pos_matrix.insert(id_string);
+   // count zero, i.e. id_string not in the set
+}
+}
 size_t HiCBuildMatrix::readBamFile() {
     
    // Open input stream, BamStream can read SAM and BAM files.
@@ -15,6 +36,7 @@ size_t HiCBuildMatrix::readBamFile() {
     int one_mate_not_unique = 0;
     int one_mate_low_quality = 0;
     bool  all_data_read=1;
+    bool pSkipDuplicationCheck;
     if (!isGood(bamStreamIn1))
     {
         std::cerr << "ERROR: Could not open the first file!\n";
