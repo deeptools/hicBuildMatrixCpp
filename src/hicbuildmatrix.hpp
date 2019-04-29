@@ -14,14 +14,14 @@ class HiCBuildMatrix
   public:
     HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead);
     size_t readBamFile();
-    bool is_duplicacted(chrom1, start1, chrom2, start2); 
+    bool is_duplicacted(const std::string &pchrom1, const std::int &pstart1,const std::string &pchrom2,  const std::int &pstart2); 
   private:
     std::string mForwardRead;
     std::string mReverseRead;
-    std::string chrom1;
-    std::string chrom2;
-    std::int start1;;
-    std::int start2;
+    std::string mchrom1;
+    std::string mchrom2;
+    std::int mstart1;;
+    std::int mstart2;
 
 };
 
