@@ -8,12 +8,14 @@
 #include <seqan/sequence.h>
 #include <seqan/seq_io.h>
 #include <assert.h> 
+#include <tuple> 
 
 class HiCBuildMatrix
 {
   public:
     HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead);
-    size_t readBamFile();
+    size_t readBamFile(std::bool &pSkipDuplicationCheck, std::tuple<T...> &pRefId2name);
+);
     bool is_duplicacted(const std::string &pchrom1, const std::int &pstart1,const std::string &pchrom2,  const std::int &pstart2); 
   private:
     std::string mForwardRead;
@@ -22,7 +24,7 @@ class HiCBuildMatrix
     std::string mchrom2;
     std::int mstart1;;
     std::int mstart2;
-
+    Std::bool mSkipDublicationCheck;
 };
 
 #endif

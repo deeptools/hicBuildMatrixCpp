@@ -30,7 +30,7 @@ bool HiCBuildMatrix::is_duplicacted(const std::string &pchrom1, const std::int &
    // count zero, i.e. id_string not in the set
 }
 }
-size_t HiCBuildMatrix::readBamFile() {
+size_t HiCBuildMatrix::readBamFile(std::bool &pSkipDuplicationCheck,std::tuple<T...> &pRefId2name) {
     
    // Open input stream, BamStream can read SAM and BAM files.
     seqan::BamStream bamStreamIn1("R1.sam");
@@ -40,7 +40,7 @@ size_t HiCBuildMatrix::readBamFile() {
     int one_mate_not_unique = 0;
     int one_mate_low_quality = 0;
     bool  all_data_read=1;
-    bool pSkipDuplicationCheck;
+    mSkipDublicationCheck = pSkipDuplicationCheck;
     read_pos_matrix = HiCBuildMatrix();
     pReadPosMatrix = read_pos_matrix;
 
@@ -65,8 +65,7 @@ size_t HiCBuildMatrix::readBamFile() {
     bamStreamOut2.header = bamStreamIn2.header;
 
     seqan::BamAlignmentRecord record1;
- seqan::
-  record2;
+ seqan::  BamAlignmentRecord record2;
     while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
     {
         readRecord(record1, bamStreamIn1);
@@ -96,8 +95,8 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
         }
     }
   if(pSkipDuplicationCheck == 0){
-            if pReadPosMatrix.is_duplicated(pRefId2name[record1.rname], record1.pos,  
-            pRefId2name[record2.rname],record2.pos){
+            if pReadPosMatrix.is_duplicated(get<record1.rname>(pRefId2name), record1.pos,  
+            get<record2.rname>(pRefId2na),record2.pos)){
                duplicated_pairs += 1; 
 
             }
