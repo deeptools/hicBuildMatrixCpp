@@ -14,7 +14,7 @@ class HiCBuildMatrix
 {
   public:
     HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead);
-    size_t readBamFile(std::bool &pSkipDuplicationCheck, std::tuple<T...> &pRefId2name);
+    size_t readBamFile(std::int &pNumberOfItemsPerBuffer,std::bool &pSkipDuplicationCheck, std::tuple<T...> &pRefId2name);
 );
     bool is_duplicacted(const std::string &pchrom1, const std::int &pstart1,const std::string &pchrom2,  const std::int &pstart2); 
   private:
@@ -24,6 +24,7 @@ class HiCBuildMatrix
     std::string mchrom2;
     std::int mstart1;;
     std::int mstart2;
+    std::int mNumberOfItemsPerBuffer;
     Std::bool mSkipDublicationCheck;
 };
 

@@ -30,19 +30,26 @@ bool HiCBuildMatrix::is_duplicacted(const std::string &pchrom1, const std::int &
    // count zero, i.e. id_string not in the set
 }
 }
-size_t HiCBuildMatrix::readBamFile(std::bool &pSkipDuplicationCheck,std::tuple<T...> &pRefId2name) {
+size_t HiCBuildMatrix::readBamFile(std::int &pNumberOfItemsPerBuffer,std::bool &pSkipDuplicationCheck,std::tuple<T...> &pRefId2name) {
     
    // Open input stream, BamStream can read SAM and BAM files.
     seqan::BamStream bamStreamIn1("R1.sam");
     seqan::BamStream bamStreamIn2("R2.sam");
+    std::vector<BamAlignmentRecord> buffer_mate1;
+    std::vector<BamAlignmentRecord> buffer_mate2;
+    std::vector<BamAlignmentRecord>  mate_bins;
     int duplicated_pairs = 0;
     int one_mate_unmapped = 0;
     int one_mate_not_unique = 0;
     int one_mate_low_quality = 0;
-    bool  all_data_read=1;
+    bool  all_data_read=0;
+    int j=0;
+    int iter_num = 0;
     mSkipDublicationCheck = pSkipDuplicationCheck;
     read_pos_matrix = HiCBuildMatrix();
     pReadPosMatrix = read_pos_matrix;
+    bool mate_is_unasigned = 0;
+
 
     if (!isGood(bamStreamIn1))
     {
@@ -65,7 +72,15 @@ size_t HiCBuildMatrix::readBamFile(std::bool &pSkipDuplicationCheck,std::tuple<T
     bamStreamOut2.header = bamStreamIn2.header;
 
     seqan::BamAlignmentRecord record1;
- seqan::  BamAlignmentRecord record2;
+    seqan::  BamAlignmentRecord record2;
+ while(j< pNumberOfItemsPerBuffer){
+            readRecord(record1, bamStreamIn1);
+             readRecord(record2, bamStreamIn2); 
+        }
+         all_data_read = 1;
+            break; 
+iter_num += 1;
+
     while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
     {
         readRecord(record1, bamStreamIn1);
@@ -77,12 +92,10 @@ size_t HiCBuildMatrix::readBamFile(std::bool &pSkipDuplicationCheck,std::tuple<T
             break; 
         readRecord(record2, bamStreamIn2);
         while ((hasFlagAllProper(record2)==1)  & 256 == 256) {
-            readRecord(record2, bamStreamIn1);    
+            readRecord(record2, bamStreamIn2);    
         }
-        all_data_read = 1;
-            break; 
-
     }
+      
 assert(record1.qName == record2.qName && "Be sure that the sam files have the same read order ");
 // if any of the reads is not mapped
    if(((hasFlagAllProper(record1)==1) && 0x4 == 4)|| ((hasFlagAllProper(record2)==1) && 0x4 == 4)){
@@ -100,8 +113,36 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
                duplicated_pairs += 1; 
 
             }
-
   }  
+  buffer_mate1.push_back(record1);
+  buffer_mate2.push_back(record2);
+  j += 1;
+  if(((all_data_read !=0) && (getAlignmentLengthInRef(record1) !=0)) && getAlignmentLengthInRef(record2) !=0) {
+       return buffer_mate1, buffer_mate2, 1 , duplicated_pairs, 
+       one_mate_unmapped, one_mate_not_unique, one_mate_low_quality, 
+       iter_num - len(buffer_mate1);
+}
+ if (all_data_read ==0 and buffer_mate1.size() == 0) || (buffer_mate2.size() == 0){
+     return Null, Null, 1, duplicated_pairs, 
+     one_mate_unmapped, one_mate_not_unique, one_mate_low_quality, 
+     iter_num - len(buffer_mate1);
+ }
+  else return buffer_mate1, buffer_mate2, 0, duplicated_pairs, one_mate_unmapped, 
+  one_mate_not_unique, one_mate_low_quality, iter_num - len(buffer_mate1);
+while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
+    {
+        readRecord(record1, bamStreamIn1);
+        mate_ref=get<record1.rname>(pRefId2name);
+        readRecord(record2, bamStreamIn2); 
+        mate_ref=get<record2.rname>(pRefId2name);
+        read_middle=record1.pos + int(record1.tLen /2);
+
+      //  while(!start>end){
+
+    } 
+
+
+
     return 0; 
 }
 
