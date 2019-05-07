@@ -49,8 +49,16 @@ size_t HiCBuildMatrix::readBamFile(std::int &pNumberOfItemsPerBuffer,std::bool &
     read_pos_matrix = HiCBuildMatrix();
     pReadPosMatrix = read_pos_matrix;
     bool mate_is_unasigned = 0;
-
-
+    int pMinMappingQuality;
+    bool  pKeepSelfCircles ;
+    string pRestrictionSequence;
+    int pMatrixSize;
+   // unordered_map<string, int> pDanglingSequences ; 
+    int pBinsize;
+    int  pResultIndex;
+    int start = 0;
+    int end;
+    vector<string> pSharedBinIntvalTree;
     if (!isGood(bamStreamIn1))
     {
         std::cerr << "ERROR: Could not open the first file!\n";
@@ -136,8 +144,32 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
         readRecord(record2, bamStreamIn2); 
         mate_ref=get<record2.rname>(pRefId2name);
         read_middle=record1.pos + int(record1.tLen /2);
+        middle_pos = int((start + end) / 2);
+       
+        vector<string> middle_position_element;
+        string x = pSharedBinIntvalTree[middle_pos];
+        for( int i=0 ; i<middle_position_element.size(); i++){
+            for( int j=0;j< pSharedBinIntvalTree.size();j++){
+                if(pSharedBinIntvalTree[j]==x)
+                { middle_position_element.insert(x);}
+            }
+        }
+     while(!start>end){
+         if((middle_position_element.begin() <=read_middle) && (read_middle <= middle_position_element.end())){
+             mate_bin = x;
+                        mate_is_unasigned = 0;
+         }
+         else if (middle_position_element.begin() <=read_middle) {
+             end = middle_pos - 1;
+                        middle_pos = int((start + end) / 2);
+                        mate_is_unasigned = 1;
+         }
+         else {
+              start = middle_pos + 1;
+                        middle_pos = int((start + end) / 2);
+                        mate_is_unasigned = 1;
 
-      //  while(!start>end){
+         }
 
     } 
 

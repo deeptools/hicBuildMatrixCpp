@@ -9,6 +9,7 @@
 #include <seqan/seq_io.h>
 #include <assert.h> 
 #include <tuple> 
+#include <unordered_map> 
 
 class HiCBuildMatrix
 {
