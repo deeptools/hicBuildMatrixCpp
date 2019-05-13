@@ -19,6 +19,7 @@ class HiCBuildMatrix
     size_t readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDuplicationCheck, std::vector<int > &pRefId2name);
 
     bool is_duplicacted(const std::string &pchrom1, const int &pstart1,const std::string &pchrom2,  const int &pstart2); 
+    size_t createInitialStructures();
   private:
     std::string mForwardRead;
     std::string mReverseRead;

@@ -31,7 +31,7 @@ def __extra_link_args():
 # -O3 -DNDEBUG -W -Wall -pedantic -fopenmp -lpthread -lrt
 
 sources_list = ['src/hicbuildmatrix_interface.cpp', 'src/hicbuildmatrix.cpp']
-depends_list = ['src/hicbuildmatrix.hpp']
+depends_list = ['src/hicbuildmatrix.hpp', 'src/IntervalTree.h']
 
 module_hicbuildmatrix = Extension('hicBuildMatrixCpp',
                       sources=sources_list,

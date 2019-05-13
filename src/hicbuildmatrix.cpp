@@ -190,7 +190,7 @@ size_t HiCBuildMatrix::readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDupl
 }
 
 
-size_t createInitialStructures() {
+size_t HiCBuildMatrix::createInitialStructures() {
 
     // open bam files
     // read sizes of chromosomes
@@ -198,15 +198,37 @@ size_t createInitialStructures() {
     // get a list [chromosomename, size of chromosome]
     // std::unordered_map<String, IntervalTree> 
     // Get intervaltree from https://github.com/ekg/intervaltree
-    // per chromosome from 0 - binSize and always increae by binSize value
+    // per chromosome from 0 to binSize and always increase by binSize value
 
     // std::unordered_map<std::string, Interval<int, int, int> > intervals;
     
-    IntervalTree<int, int> intervals;
-    intervals.push_back(Interval<int, int>(2, 10, 1));
-    intervals.push_back(Interval<int, int>(3, 4, 2));
-    intervals.push_back(Interval<int, int>(20, 100, 3));
-    // IntervalTree<int, int> tree;
-    // tree = IntervalTree<int, int>(intervals);
+    std::unordered_map<std::string, IntervalTree<size_t, size_t> > intervalTree;
+    size_t numberOfChromosomes = 22; // TODO:  get number of chromosomes
+    size_t lengthOfChromosome = 0;
+    size_t binSize = 10000; // TODO: get real bin size as a parameter from python
+    size_t counter = 0;
+    std::string chromosomeName;
+    for (size_t i = 0; i < numberOfChromosomes; ++i) {
+        std::vector<Interval<size_t, size_t> > intervals;
+        lengthOfChromosome = 220000000; // TODO: get real value for the specific chromosome
+        counter = 0;
+        chromosomeName = 'chr1'; // TODO: get real chromosome name for specific chromosome
+        for (size_t j = 0; j < lengthOfChromosome; j = j + binSize) {
+            intervals.push_back(Interval<size_t, size_t>(j, j + binSize, counter));
+            counter++;
+        }
+        IntervalTree<size_t, int> tree;
+        intervalTree[chromosomeName] = IntervalTree<size_t, size_t>(std::move(intervals));
+    }
+
+    // intervals.push_back(Interval<size_t, int>(2, 10, 1));
+    // intervals.push_back(Interval<size_t, int>(3, 4, 2));
+    // intervals.push_back(Interval<size_t,int>(20, 100, 3));
+    // IntervalTree<size_t, int> tree;
+    // tree = IntervalTree<size_t, int>(std::move(intervals));
+
+    // std::vector<Interval<size_t, int> > results;
+    // auto results  = tree.findContained(3, 5 );
+    // std::cout << "found " << results.size() << " overlapping intervals" << std::endl;
     return 0;
 }

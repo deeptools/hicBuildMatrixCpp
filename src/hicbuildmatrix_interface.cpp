@@ -14,7 +14,8 @@ static PyObject* buildMatrix(PyObject* self, PyObject* args) {
 
     HiCBuildMatrix* hiCBuildMatrix;
     hiCBuildMatrix = new HiCBuildMatrix(forwardReadString, reverseReadString);
-    hiCBuildMatrix->readBamFile();
+    // hiCBuildMatrix->readBamFile();
+    hiCBuildMatrix->createInitialStructures();
     return Py_BuildValue("");
 }
 
