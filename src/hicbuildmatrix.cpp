@@ -148,14 +148,15 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
        
         vector<string> middle_position_element;
         string x = pSharedBinIntvalTree[middle_pos];
-        for( int i=0 ; i<middle_position_element.size(); i++){
-            for( int j=0;j< pSharedBinIntvalTree.size();j++){
-                if(pSharedBinIntvalTree[j]==x)
-                { middle_position_element.insert(x);}
+        for( int i=0 ; i<middle_position_element.size(); i++) {
+            for( int j=0;j< pSharedBinIntvalTree.size();j++) {
+                if(pSharedBinIntvalTree[j]==x) {
+                     middle_position_element.insert(x);
+                }
             }
         }
      while(!start>end){
-         if((middle_position_element.begin() <=read_middle) && (read_middle <= middle_position_element.end())){
+         if((middle_position_element.begin() <= read_middle) && (read_middle <= middle_position_element.end())){
              mate_bin = x;
                         mate_is_unasigned = 0;
          }
@@ -168,12 +169,21 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
               start = middle_pos + 1;
                         middle_pos = int((start + end) / 2);
                         mate_is_unasigned = 1;
-
          }
-
     } 
+ try
+  {
+    throw  mate_is_unasigned = 1;
+  }
+  catch (...)
+  {
+    cout << "An exception occurred.";
+  }
+ if(mate_bin == NULL) {
+      mate_is_unasigned = 1;
+      break;
 
-
+ }
 
     return 0; 
 }
