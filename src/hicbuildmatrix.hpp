@@ -6,6 +6,7 @@
 #include <string>
 #include <seqan/bam_io.h>
 #include <seqan/sequence.h>
+#include <seqan/stream.h>
 #include <seqan/seq_io.h>
 #include <assert.h> 
 #include <tuple> 
@@ -19,7 +20,7 @@ class HiCBuildMatrix
     size_t readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDuplicationCheck, std::vector<int > &pRefId2name);
 
     bool is_duplicacted(const std::string &pchrom1, const int &pstart1,const std::string &pchrom2,  const int &pstart2); 
-    size_t createInitialStructures();
+    std::unordered_map<std::string, IntervalTree<size_t, size_t> > createInitialStructures(seqan::BamStream pBamStream, int pBinSize);
   private:
     std::string mForwardRead;
     std::string mReverseRead;
