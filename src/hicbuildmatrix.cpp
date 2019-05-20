@@ -4,9 +4,9 @@ HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::strin
     mForwardRead = pForwardRead;
     mReverseRead = pReverseRead;
 }
-
-bool HiCBuildMatrix::is_duplicacted(const std::string &pchrom1, const int &pstart1, const std::string &pchrom2,const int &pstart2) {
-//    std::set<string> pos_matrix;
+     std::set<std::string> pos_matrix;
+bool HiCBuildMatrix::is_duplicacted(const std::string pchrom1, const int pstart1, const std::string pchrom2,const int pstart2) {
+//    
 //    mchrom1 = pchrom1;
 //    mstart1 = pstart1;
 //    mchrom2 = pchrom2;
@@ -30,16 +30,16 @@ bool HiCBuildMatrix::is_duplicacted(const std::string &pchrom1, const int &pstar
 //     pos_matrix.insert(id_string);
 //    // count zero, i.e. id_string not in the set
 // }
-    return true;
+    //return true;
 }
-size_t HiCBuildMatrix::readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDuplicationCheck, std::vector<int> &pRefId2name) {
+size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplicationCheck) {
     
    // Open input stream, BamStream can read SAM and BAM files.
     seqan::BamStream bamStreamIn1("R1.sam");
     seqan::BamStream bamStreamIn2("R2.sam");
-    std::vector<BamAlignmentRecord> buffer_mate1;
-    std::vector<BamAlignmentRecord> buffer_mate2;
-    std::vector<BamAlignmentRecord>  mate_bins;
+    std::vector<seqan::BamAlignmentRecord> buffer_mate1;
+    std::vector<seqan::BamAlignmentRecord> buffer_mate2;
+    std::vector<seqan::BamAlignmentRecord>  mate_bins;
     int duplicated_pairs = 0;
     int one_mate_unmapped = 0;
     int one_mate_not_unique = 0;
@@ -48,19 +48,21 @@ size_t HiCBuildMatrix::readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDupl
     int j=0;
     int iter_num = 0;
     mSkipDublicationCheck = pSkipDuplicationCheck;
-    read_pos_matrix = HiCBuildMatrix();
-    pReadPosMatrix = read_pos_matrix;
+    //read_pos_matrix = HiCBuildMatrix();
+   // pReadPosMatrix = read_pos_matrix;
     bool mate_is_unasigned = 0;
     int pMinMappingQuality;
     bool  pKeepSelfCircles ;
-    string pRestrictionSequence;
+    std::string pRestrictionSequence;
     int pMatrixSize;
    // unordered_map<string, int> pDanglingSequences ; 
     int pBinSize = 10000;
     int  pResultIndex;
     int start = 0;
     int end;
-    std::unordered_map<std::string, IntervalTree<size_t, size_t> > pSharedBinIntvalTree = createInitialStructures(bamStreamIn1, pBinSize);
+    std::unordered_map<std::string, IntervalTree<size_t, size_t> > pSharedBinIntvalTree = createInitialStructures(seqan::BamStream bamStreamIn1, pBinSize);
+    std::vector<std::string> pRefId2name = getRefIds(seqan::BamStream bamStreamIn1);
+
     if (!isGood(bamStreamIn1))
     {
         std::cerr << "ERROR: Could not open the first file!\n";
@@ -86,9 +88,10 @@ size_t HiCBuildMatrix::readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDupl
  while(j< pNumberOfItemsPerBuffer){
             readRecord(record1, bamStreamIn1);
              readRecord(record2, bamStreamIn2); 
+             break; 
         }
          all_data_read = 1;
-            break; 
+            
 iter_num += 1;
 
     while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
@@ -118,7 +121,7 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
         }
     }
   if(pSkipDuplicationCheck == 0){
-            if pReadPosMatrix.is_duplicated(get<record1.rname>(pRefId2name), record1.pos,  
+            if (pReadPosMatrix.is_duplicated(get<record1.rname>(pRefId2name), record1.pos,  
             get<record2.rname>(pRefId2na),record2.pos)){
                duplicated_pairs += 1; 
 
@@ -130,28 +133,28 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
   if(((all_data_read !=0) && (getAlignmentLengthInRef(record1) !=0)) && getAlignmentLengthInRef(record2) !=0) {
        return buffer_mate1, buffer_mate2, 1 , duplicated_pairs, 
        one_mate_unmapped, one_mate_not_unique, one_mate_low_quality, 
-       iter_num - len(buffer_mate1);
+       iter_num - buffer_mate1.size();
 }
- if (all_data_read ==0 and buffer_mate1.size() == 0) || (buffer_mate2.size() == 0){
-     return Null, Null, 1, duplicated_pairs, 
+ if ((all_data_read ==0 and buffer_mate1.size() == 0) || (buffer_mate2.size() == 0)){
+     return 0, 0, 1, duplicated_pairs, 
      one_mate_unmapped, one_mate_not_unique, one_mate_low_quality, 
-     iter_num - len(buffer_mate1);
+     iter_num - buffer_mate1.size();
  }
   else return buffer_mate1, buffer_mate2, 0, duplicated_pairs, one_mate_unmapped, 
-  one_mate_not_unique, one_mate_low_quality, iter_num - len(buffer_mate1);
+  one_mate_not_unique, one_mate_low_quality, iter_num - buffer_mate1.size();
 while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
     {
         readRecord(record1, bamStreamIn1);
-        mate_ref=get<record1.rname>(pRefId2name);
+        mate_ref = get<record1.rname>(pRefId2name);
         readRecord(record2, bamStreamIn2); 
-        mate_ref=get<record2.rname>(pRefId2name);
-        read_middle=record1.pos + int(record1.tLen /2);
-        middle_pos = int((start + end) / 2);
+        mate_ref = get<record2.rname>(pRefId2name);
+        read_middle = record1.pos + int(record1.tLen /2);
+        int middle_pos = int((start + end) / 2);
        
-        vector <string> middle_position_element;
-        string x = pSharedBinIntvalTree[middle_pos];
+        std::vector <std::string> middle_position_element;
+        std::string x = pSharedBinIntvalTree[middle_pos];
         for( int i=0 ; i<middle_position_element.size(); i++) {
-            for( int j=0;j< pSharedBinIntvalTree.size();j++) {
+            for( int j=0;j < pSharedBinIntvalTree.size(); j++) {
                 if(pSharedBinIntvalTree[j]==x) {
                      middle_position_element.insert(x);
                 }
@@ -159,7 +162,7 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
         }
      while(!start>end){
          if((middle_position_element.begin() <= read_middle) && (read_middle <= middle_position_element.end())){
-             mate_bin = x;
+            std::string mate_bin = x;
                         mate_is_unasigned = 0;
          }
          else if (middle_position_element.begin() <=read_middle) {
@@ -173,22 +176,25 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
                         mate_is_unasigned = 1;
          }
     } 
+    if (mate_bin.empty()){
+            mate_is_unasigned = 1;
+            break;
+      }
  try
   {
     throw  mate_is_unasigned = 1;
   }
   catch (...)
   {
-    cout << "An exception occurred.";
+    std::cout << "An exception occurred.";
   }
- if(mate_bin == NULL) {
-      mate_is_unasigned = 1;
-      break;
+  
+      
+         
  }
 
     return 0; 
 }
-
 
 std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize) {
 
@@ -228,13 +234,13 @@ std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::c
                chromosome_size.push_back(pBamStream.header.sequenceInfos[i].i2);
        //}           
      }
-     for (size_t j = 0; j < chromosome_refName.size(); j++)  // read names of chromosomes
-      {
-    // for (size_t j = 0; j < chromosome_size.size(); j++) 
-    //  {
-           std::cout << chromosome_refName[j] << ' ' << chromosome_size[j] << std::endl;
-    //   } // read sizes of chromosomes
-       }
+    //  for (size_t j = 0; j < chromosome_refName.size(); j++)  // read names of chromosomes
+    //   {
+    // // for (size_t j = 0; j < chromosome_size.size(); j++) 
+    // //  {
+    //        std::cout << chromosome_refName[j] << ' ' << chromosome_size[j] << std::endl;
+    // //   } // read sizes of chromosomes
+    //    }
       
     //    std::string foo(seqan::toCString(chromosome_refName[0]));
     //    std::cout << foo << std::endl;
