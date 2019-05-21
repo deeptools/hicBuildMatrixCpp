@@ -17,9 +17,9 @@ class HiCBuildMatrix
 {
   public:
     HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead);
-    size_t readBamFile(int &pNumberOfItemsPerBuffer, bool &pSkipDuplicationCheck, std::vector<int > &pRefId2name);
+    size_t readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplicationCheck, std::vector<int> &pRefId2name);
 
-    bool is_duplicacted(const std::string &pchrom1, const int &pstart1,const std::string &pchrom2,  const int &pstart2); 
+    bool is_duplicacted(const std::string &pchrom1,const int pstart1,const std::string &pchrom2,const int &pstart2); 
     std::unordered_map<std::string, IntervalTree<size_t, size_t> > createInitialStructures(seqan::BamStream pBamStream, int pBinSize);
   private:
     std::string mForwardRead;
