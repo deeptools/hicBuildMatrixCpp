@@ -5,14 +5,14 @@ HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::strin
     mReverseRead = pReverseRead;
 }
 
-bool HiCBuildMatrix::is_duplicated(const std::string pchrom1, const int pstart1, const std::string pchrom2,const int pstart2) {
+bool HiCBuildMatrix::is_duplicated(const  seqan::CharString  pchrom1, const int pstart1, const  seqan::CharString  pchrom2,const int pstart2) {
 
-std::set<std::string>::iterator it;
-std::string mchrom1 = pchrom1;
+std::set< seqan::CharString >::iterator it;
+ seqan::CharString  mchrom1 = pchrom1;
 int mstart1 = pstart1;
-std::string mchrom2 = pchrom2;
+ seqan::CharString  mchrom2 = pchrom2;
 int mstart2 = pstart2;
-std::string id_string;
+ seqan::CharString  id_string;
 
      if(mchrom1< mchrom2) {
         id_string = pchrom1 + '-' + pchrom2; //Format("___ - ___", "mchrom1","mchrom2");
@@ -21,10 +21,10 @@ std::string id_string;
         id_string = pchrom2 + '-' + pchrom1;  //Format("___ - ___", "mchrom2","mchrom1");
      }
      if (mstart1 < mstart2) {
-      std::string  id_string= std::to_string(mstart1 - mstart2); //Format("___ - ___", "mstart1","mstart2");
+       seqan::CharString   id_string=  mstart1 - mstart2//std::to_string(mstart1 - mstart2); //Format("___ - ___", "mstart1","mstart2");
      }
      else {
-         id_string = std::to_string(mstart2 - mstart1); //Format("___ - ___", "mstart2","mstart1");
+      seqan::CharString   id_string = mstart2 - mstart1 //std::to_string(mstart2 - mstart1); //Format("___ - ___", "mstart2","mstart1");
    }
     it=mPosMatrix.find(id_string);
     for (it=mPosMatrix.begin(); it!=mPosMatrix.end(); ++it) {
@@ -41,7 +41,7 @@ std::string id_string;
 
 std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamStream) {
     std::vector <std::string> chromosome_refName;   // vector with chromosomes
-    
+    std::vector <size_t> chromosome_size; 
     for (size_t i = 0; i < length(pBamStream.header.sequenceInfos); ++i) 
     {
    
@@ -72,8 +72,6 @@ std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamS
     int j=0;
     int iter_num = 0;
     mSkipDublicationCheck = pSkipDuplicationCheck;
-    //read_pos_matrix = HiCBuildMatrix();
-    // mPosMatrix
     bool mate_is_unasigned = 0;
     int pMinMappingQuality;
     bool  pKeepSelfCircles ;
@@ -83,8 +81,11 @@ std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamS
     int pBinSize = 10000;
     int  pResultIndex;
     int start = 0;
+
+
+
     int end;
-    std::unordered_map<std::string, IntervalTree<size_t, size_t> > pSharedBinIntvalTree = createInitialStructures(bamStreamIn1, pBinSize);
+    std::unordered_map<std::string, IntervalTree<size_t, size_t> > pSharedBinIntervalTree = createInitialStructures(bamStreamIn1, pBinSize);
     
     
     if (!isGood(bamStreamIn1))
@@ -108,7 +109,7 @@ std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamS
     bamStreamOut2.header = bamStreamIn2.header;
 
     seqan::BamAlignmentRecord record1;
-    seqan::  BamAlignmentRecord record2;
+    seqan::BamAlignmentRecord record2;
   while(j< pNumberOfItemsPerBuffer){
             readRecord(record1, bamStreamIn1);
              readRecord(record2, bamStreamIn2); 
@@ -144,10 +145,10 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
     }
   if(pSkipDuplicationCheck == 0){
       // maybe this->
-            if (is_duplicated(record1.rname, record1.pos,  
-                                record2.rname,record2.pos) {
+            if (is_duplicated(record1.qName, record1.beginPos,  // chromosome_refName
+                                record2.qName,record2.beginPos))
+                                {
                duplicated_pairs += 1; 
-
             }
   }  
   buffer_mate1.push_back(record1);
@@ -159,7 +160,7 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
        iter_num - buffer_mate1.size();
 }
  if ((all_data_read ==0 && buffer_mate1.size() == 0) || (buffer_mate2.size() == 0)) {
-     return Null, Null, 1, duplicated_pairs, 
+     return 0, 0, 1, duplicated_pairs, 
      one_mate_unmapped, one_mate_not_unique, one_mate_low_quality, 
      iter_num - buffer_mate1.size();
  }
@@ -168,13 +169,13 @@ assert(record1.qName == record2.qName && "Be sure that the sam files have the sa
 while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
     {
         readRecord(record1, bamStreamIn1);
-        mate_ref=get<record1.rname>(pRefId2name);
+       seqan::CharString mate_ref1 =  record1.qName;                   //get<record1.rname>(pRefId2name);
         readRecord(record2, bamStreamIn2); 
-        mate_ref=get<record2.rname>(pRefId2name);
-        read_middle=record1.pos + int(record1.tLen /2);
-        middle_pos = int((start + end) / 2);
+       seqan::CharString mate_ref2 =   record2.qName;                                //get<record2.rname>(pRefId2name);
+       int  read_middle = record1.beginPos + int(TLength::getContigLength(record1,bamStreamIn1) /2);
+       int  middle_pos = int((start + end) / 2);
        
-        vector <std::string> middle_position_element;
+        std::vector <std::string> middle_position_element;
         std::string x = pSharedBinIntvalTree[middle_pos];
         for( int i=0 ; i<middle_position_element.size(); i++) {
             for( int j=0;j< pSharedBinIntvalTree.size();j++) {
@@ -184,8 +185,8 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
             }
         }
      while(!start>end){
-         if((middle_position_element.begin() <= read_middle) && (read_middle <= middle_position_element.end())){
-             mate_bin = x;
+         if((middle_position_element.begin() < = read_middle) && (read_middle < = middle_position_element.end())){
+             std::string mate_bin = pSharedBinIntvalTree[middle_pos];
                         mate_is_unasigned = 0;
          }
          else if (middle_position_element.begin() <=read_middle) {
@@ -216,7 +217,7 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
 }
 
 
-std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize) {
+std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::createInitialStructures (seqan::BamStream pBamStream, int pBinSize) {
 
   
      if (!isGood(pBamStream))
