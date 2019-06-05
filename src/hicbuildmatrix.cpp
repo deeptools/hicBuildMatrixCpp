@@ -5,7 +5,7 @@ HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::strin
     mReverseRead = pReverseRead;
 }
 
-bool HiCBuildMatrix::is_duplicated(const  seqan::CharString  pchrom1, const int pstart1, const  seqan::CharString  pchrom2,const int pstart2) {
+bool HiCBuildMatrix::is_duplicated( seqan::CharString  pchrom1,  int pstart1, seqan::CharString  pchrom2, int pstart2) {
 
 std::set< seqan::CharString >::iterator it;
  seqan::CharString  mchrom1 = pchrom1;
@@ -15,16 +15,16 @@ int mstart2 = pstart2;
  seqan::CharString  id_string;
 
      if(mchrom1< mchrom2) {
-        id_string = pchrom1 + '-' + pchrom2; //Format("___ - ___", "mchrom1","mchrom2");
+       seqan::CharString id_string = pchrom1 + '-' + pchrom2; //Format("___ - ___", "mchrom1","mchrom2");
     }
      else {
-        id_string = pchrom2 + '-' + pchrom1;  //Format("___ - ___", "mchrom2","mchrom1");
+       seqan::CharString id_string = pchrom2 + '-' + pchrom1;  //Format("___ - ___", "mchrom2","mchrom1");
      }
      if (mstart1 < mstart2) {
-       seqan::CharString   id_string=  mstart1 - mstart2//std::to_string(mstart1 - mstart2); //Format("___ - ___", "mstart1","mstart2");
+       seqan::CharString   id_string=  mstart1 - mstart2;//std::to_string(mstart1 - mstart2); //Format("___ - ___", "mstart1","mstart2");
      }
      else {
-      seqan::CharString   id_string = mstart2 - mstart1 //std::to_string(mstart2 - mstart1); //Format("___ - ___", "mstart2","mstart1");
+      seqan::CharString   id_string = mstart2 - mstart1; //std::to_string(mstart2 - mstart1); //Format("___ - ___", "mstart2","mstart1");
    }
     it=mPosMatrix.find(id_string);
     for (it=mPosMatrix.begin(); it!=mPosMatrix.end(); ++it) {
