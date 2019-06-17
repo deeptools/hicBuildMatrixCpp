@@ -7,21 +7,23 @@ HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::strin
 
 bool HiCBuildMatrix::is_duplicated( seqan::CharString  pchrom1,  int pstart1, seqan::CharString  pchrom2, int pstart2) {
 
-std::set< seqan::CharString >::iterator it;
- seqan::CharString  mchrom1 = pchrom1;
+ std::set< seqan::CharString >::iterator it;
+ seqan::CharString mchrom1 = pchrom1;                           
 int mstart1 = pstart1;
- seqan::CharString  mchrom2 = pchrom2;
+//std::string  = std::to_string(mstart1);
+seqan::CharString mchrom2 = pchrom2; 
 int mstart2 = pstart2;
- seqan::CharString  id_string;
+//std::string  = std::to_string(mstart2);
+seqan::CharString id_string;
 
      if(mchrom1< mchrom2) {
-       seqan::CharString id_string = pchrom1 + '-' + pchrom2; //Format("___ - ___", "mchrom1","mchrom2");
+       seqan::CharString id_string = concat(pchrom1,'-',pchrom2); //Format("___ - ___", "mchrom1","mchrom2");
     }
      else {
-       seqan::CharString id_string = pchrom2 + '-' + pchrom1;  //Format("___ - ___", "mchrom2","mchrom1");
+       seqan::CharString id_string = concat(pchrom2,'-',pchrom1); //Format("___ - ___", "mchrom2","mchrom1");
      }
      if (mstart1 < mstart2) {
-       seqan::CharString   id_string=  mstart1 - mstart2;//std::to_string(mstart1 - mstart2); //Format("___ - ___", "mstart1","mstart2");
+       seqan::CharString  id_string=  mstart1 - mstart2;//std::to_string(mstart1 - mstart2); //Format("___ - ___", "mstart1","mstart2");
      }
      else {
       seqan::CharString   id_string = mstart2 - mstart1; //std::to_string(mstart2 - mstart1); //Format("___ - ___", "mstart2","mstart1");
@@ -85,10 +87,8 @@ std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamS
 
 
     int end;
-    std::unordered_map<std::string, IntervalTree<size_t, size_t> > pSharedBinIntervalTree = createInitialStructures(bamStreamIn1, pBinSize);
     
-    
-    if (!isGood(bamStreamIn1))
+     if (!isGood(bamStreamIn1))
     {
         std::cerr << "ERROR: Could not open the first file!\n";
         return 1;
@@ -172,11 +172,11 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
        seqan::CharString mate_ref1 =  record1.qName;                   //get<record1.rname>(pRefId2name);
         readRecord(record2, bamStreamIn2); 
        seqan::CharString mate_ref2 =   record2.qName;                                //get<record2.rname>(pRefId2name);
-       int  read_middle = record1.beginPos + int(TLength::getContigLength(record1,bamStreamIn1) /2);
+       int  read_middle = record1.beginPos + int(seqan::BamAlignmentRecord::getContigLength(record1,bamStreamIn1) /2);
        int  middle_pos = int((start + end) / 2);
        
         std::vector <std::string> middle_position_element;
-        std::string x = pSharedBinIntvalTree[middle_pos];
+        std::string x = std::pSharedBinIntvalTree[middle_pos];
         for( int i=0 ; i<middle_position_element.size(); i++) {
             for( int j=0;j< pSharedBinIntvalTree.size();j++) {
                 if(pSharedBinIntvalTree[j] == x) {
@@ -185,7 +185,7 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
             }
         }
      while(!start>end){
-         if((middle_position_element.begin() < = read_middle) && (read_middle < = middle_position_element.end())){
+         if((middle_position_element.begin() <= read_middle) && (read_middle <= middle_position_element.end())){
              std::string mate_bin = pSharedBinIntvalTree[middle_pos];
                         mate_is_unasigned = 0;
          }
@@ -208,7 +208,7 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
   {
     std::cout << "An exception occurred.";
   }
- if(mate_bin == NULL) {
+ if(mate_bins.empty()) {
       mate_is_unasigned = 1;
       break;
  }
@@ -217,7 +217,7 @@ while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
 }
 
 
-std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::createInitialStructures (seqan::BamStream pBamStream, int pBinSize) {
+std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize) {
 
   
      if (!isGood(pBamStream))
@@ -291,3 +291,4 @@ std::unordered_map<std::string, IntervalTree<size_t, size_t> > HiCBuildMatrix::c
     }
     return intervalTree;
 } 
+ }
