@@ -1,6 +1,6 @@
 #include "hicbuildmatrix.hpp"
 
-HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead)
+/*HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead)
 {
     mForwardRead = pForwardRead;
     mReverseRead = pReverseRead;
@@ -73,6 +73,7 @@ std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamS
         
     }
 }
+*/        
 size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplicationCheck, std::vector<std::string> pRefId2name)
 {
 
@@ -221,11 +222,11 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
             seqan::CharString mate_ref1 = record1.qName; //get<record1.rname>(pRefId2name);
             readRecord(record2, bamStreamIn2);
             seqan::CharString mate_ref2 = record2.qName; //get<record2.rname>(pRefId2name);
-            int read_middle = record1.beginPos + int(seqan::BamAlignmentRecord::getContigLength(record1, bamStreamIn1) / 2);
+            int read_middle = record1.beginPos + int(seqan::BamAlignmentRecord::TLength::getContigLength(record1, bamStreamIn1) / 2);
             int middle_pos = int((start + end) / 2);
 
              std::vector<int> middle_position_element;
-             std::string x = pSharedBinIntvalTree[middle_pos];
+             int  x = pSharedBinIntvalTree[middle_pos];
              for (int i = 0; i < middle_position_element.size(); i++)
              {
                  for (int j = 0; j < pSharedBinIntvalTree.size(); j++)
@@ -237,13 +238,13 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
                  }
              }
              while (!start > end)
-             {
-                if ((middle_position_element.begin() <= read_middle) && (read_middle <= middle_position_element.end()))
+             {   int i;
+                if ( (middle_position_element[1]) <= read_middle && (read_middle <= middle_position_element[i]))
                 {
-                     std::string mate_bin = pSharedBinIntvalTree[middle_pos];
+                     std::string mate_bin = std::to_string(pSharedBinIntvalTree[middle_pos]);
                      mate_is_unasigned = 0;
                 }
-                 else if (middle_position_element.begin() <= read_middle)
+                 else if (middle_position_element[1] <= read_middle)
                  {
                      end = middle_pos - 1;
                  middle_pos = int((start + end) / 2);
