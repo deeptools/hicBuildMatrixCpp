@@ -270,6 +270,7 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
                  mate_is_unasigned = 1;
                  break;
              } 
+        }
      }
 
     //return 0; 
