@@ -1,6 +1,6 @@
 #include "hicbuildmatrix.hpp"
-
-/*HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead)
+ //  Hi-C quantifies interactions between all possible pairs of fragments simultaneously.
+HiCBuildMatrix::HiCBuildMatrix(const std::string &pForwardRead, const std::string &pReverseRead)
 {
     mForwardRead = pForwardRead;
     mReverseRead = pReverseRead;
@@ -54,7 +54,7 @@ bool HiCBuildMatrix::is_duplicated(seqan::CharString pChrom1, size_t pStart1, se
     // // count zero, i.e. id_string not in the set
 
     // return true;
-}
+}  
 
 std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamStream)
 {
@@ -73,7 +73,7 @@ std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamS
         
     }
 }
-*/        
+      
 size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplicationCheck, std::vector<std::string> pRefId2name)
 {
 
@@ -222,19 +222,19 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
             seqan::CharString mate_ref1 = record1.qName; //get<record1.rname>(pRefId2name);
             readRecord(record2, bamStreamIn2);
             seqan::CharString mate_ref2 = record2.qName; //get<record2.rname>(pRefId2name);
-            int read_middle = record1.beginPos + int(seqan::BamAlignmentRecord::TLength::getContigLength(record1, bamStreamIn1) / 2);
+            int read_middle = record1.beginPos + int(getAlignmentLengthInRef(record1) / 2);
             int middle_pos = int((start + end) / 2);
 
              std::vector<int> middle_position_element;
-             int  x = pSharedBinIntvalTree[middle_pos];
+             int k = pSharedBinIntvalTree[middle_pos];
              for (int i = 0; i < middle_position_element.size(); i++)
              {
                  for (int j = 0; j < pSharedBinIntvalTree.size(); j++)
                  {
-                    if (pSharedBinIntvalTree[j] == x)
-                     {
-                         middle_position_element.insert(x);
-                     }
+                    if (pSharedBinIntvalTree[j] == k)
+                    {
+                         middle_position_element.insert(k);
+                    }
                  }
              }
              while (!start > end)
@@ -274,9 +274,9 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
      }
 
     //return 0; 
-} 
+}  
 
-/*std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize)
+std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize)
 {
 
     // if (!isGood(pBamStream))
@@ -347,4 +347,4 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
         std::cout << results[i] << std::endl;
     }
     return intervalTree;
-} */
+} 
