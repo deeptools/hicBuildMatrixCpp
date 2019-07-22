@@ -44,16 +44,6 @@ bool HiCBuildMatrix::is_duplicated(seqan::CharString pChrom1, size_t pStart1, se
     mPosMatrix.insert(sequence);
 
     return false;
-    // for (it = mPosMatrix.begin(); it != mPosMatrix.end(); ++it)
-    // {
-    //     return true;
-    // }
-    // //if (pos_matrix.count(id_string)) {
-    // // id_string is in the set, count is 1
-
-    // // count zero, i.e. id_string not in the set
-
-    // return true;
 }  
 
 std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamStream)
@@ -83,7 +73,7 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     std::vector<seqan::BamAlignmentRecord> buffer_mate1;
     std::vector<seqan::BamAlignmentRecord> buffer_mate2;
     std::vector<seqan::BamAlignmentRecord> mate_bins;
-    std::unordered_map<std::string, IntervalTree<size_t, size_t>> pSharedBinIntvalTree;
+    //std::unordered_map<std::string,IntervalTree<size_t, size_t>> pSharedBinIntvalTree;
     int duplicated_pairs = 0; 
     int one_mate_unmapped = 0;
     int one_mate_not_unique = 0;
@@ -119,7 +109,6 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     int col[] = {};
     int data[] = {};
 
-     std::unordered_map<std::string, IntervalTree<size_t, size_t>> interval_T = pSharedBinIntvalTree.createInitialStructures(bamStreamIn1,pBinSize);
     if (!isGood(bamStreamIn1))
     {
         std::cerr << "ERROR: Could not open the first file!\n";
@@ -152,7 +141,7 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     all_data_read = 1;
     iter_num += 1;
     std::cout << __LINE__ << std::endl; 
-    
+    std::unordered_map<std::string,IntervalTree<size_t,size_t>> pSharedBinIntvalTree = HiCBuildMatrix::createInitialStructures(bamStreamIn1,pBinSize);
 
     while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
     {
@@ -249,7 +238,7 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
               p->second;
              */
 
-             /*while (!start > end)
+             while (!start > end)
              {   int i;
                 if ( (middle_position_element[1]) <= read_middle && (read_middle <= middle_position_element[i]))
                 {
@@ -281,11 +270,11 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
              {
                  mate_is_unasigned = 1;
                  break;
-             } */ 
+             }  
         }
      }
 
-    //return 0; 
+    return 0; 
 }  
 
 std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize)
