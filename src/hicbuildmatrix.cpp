@@ -45,35 +45,16 @@ bool HiCBuildMatrix::is_duplicated(seqan::CharString pChrom1, size_t pStart1, se
 
     return false;
 }  
-
-std::vector<std::string> HiCBuildMatrix::createRefId2name(seqan::BamStream pBamStream)
-{
-    std::vector<std::string> chromosome_refName; // vector with chromosomes
-    std::vector<size_t> chromosome_size;
-    for (size_t i = 0; i < length(pBamStream.header.sequenceInfos); ++i)
-    {
-
-        chromosome_refName.push_back(seqan::toCString(pBamStream.header.sequenceInfos[i].i1));
-
-        chromosome_size.push_back(pBamStream.header.sequenceInfos[i].i2);
-    }
-    for (size_t j = 0; j < chromosome_refName.size(); j++) // read names of chromosomes
-    {
-        std::cout << chromosome_refName[j] << ' ' << chromosome_size[j] << std::endl;
-        
-    }
-}
       
 size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplicationCheck, std::vector<std::string> pRefId2name)
 {
 
-    // Open input stream, BamStream can read SAM and BAM files.
-    seqan::BamStream bamStreamIn1("R1.sam");
-    seqan::BamStream bamStreamIn2("R2.sam");
+    // Open input stream, BamFileIn can read SAM and BAM files.
+    seqan::BamFileIn pBamFileIn1("R1.sam");
+    seqan::BamFileIn pBamFileIn2("R2.sam");
     std::vector<seqan::BamAlignmentRecord> buffer_mate1;
     std::vector<seqan::BamAlignmentRecord> buffer_mate2;
     std::vector<seqan::BamAlignmentRecord> mate_bins;
-    //std::unordered_map<std::string,IntervalTree<size_t, size_t>> pSharedBinIntvalTree;
     int duplicated_pairs = 0; 
     int one_mate_unmapped = 0;
     int one_mate_not_unique = 0;
@@ -87,7 +68,7 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     bool pKeepSelfCircles;
     std::string pRestrictionSequence;
     int pMatrixSize;
-    int pBinSize = 10000;
+       int pBinSize = 10000;
     int pResultIndex;
     int start = 0;
     int end;
@@ -108,54 +89,50 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     int row[] = {};
     int col[] = {};
     int data[] = {};
-
-    if (!isGood(bamStreamIn1))
+    seqan::BamFileIn inFile;   
+    // if (!open(inFile,pBamFileIn1))
+    // {
+    //     std::cerr << "ERROR: Could not open the first file!\n";
+    //     return 1;
+    // }
+    if (!open(inFile, toCString(pBamFileIn1)))
     {
-        std::cerr << "ERROR: Could not open the first file!\n";
+        std::cerr << "ERROR: Could not open" << pBamFileIn1 << " for reading.\n";
         return 1;
     }
-    else if (!isGood(bamStreamIn2))
-    {
-        std::cerr << "ERROR: Could not open the second file!\n";
-        return 1;
-    }
-    std::cout << __LINE__ << std::endl;
-    // Open output stream, "-" means stdin on if reading, else stdout.
-    seqan::BamStream bamStreamOut1("-", seqan::BamStream::WRITE);
-    seqan::BamStream bamStreamOut2("-", seqan::BamStream::WRITE);
-    std::cout << __LINE__ << std::endl;
-
-    // Copy header.  The header is automatically written out before
+    // else if (!open(inFile,pBamFileIn2))
+    // {
+    //     std::cerr << "ERROR: Could not open the second file!\n";
+    //     return 1;
+    // }
+     // Copy header.  The header is automatically written out before
     // the first record.
-    bamStreamOut1.header = bamStreamIn1.header;
-    bamStreamOut2.header = bamStreamIn2.header;
 
     seqan::BamAlignmentRecord record1;
     seqan::BamAlignmentRecord record2;
      while (j < pNumberOfItemsPerBuffer)
      {
-         readRecord(record1, bamStreamIn1);
-         readRecord(record2, bamStreamIn2);
+         seqan::readRecord(record1, pBamFileIn1);
+         readRecord(record2, pBamFileIn2);
         j++;
      }
     all_data_read = 1;
     iter_num += 1;
     std::cout << __LINE__ << std::endl; 
-    std::unordered_map<std::string,IntervalTree<size_t,size_t>> pSharedBinIntvalTree = HiCBuildMatrix::createInitialStructures(bamStreamIn1,pBinSize);
-
-    while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
+    std::unordered_map<std::string,IntervalTree<size_t,size_t>> pSharedBinIntvalTree = HiCBuildMatrix::createInitialStructures();
+    //IntervalTree<size_t, int> pSharedBinIntvalTree = HiCBuildMatrix::createInitialStructures();
+    while (!atEnd(pBamFileIn1) && !atEnd(pBamFileIn2))
     {
-        readRecord(record1, bamStreamIn1);
+        readRecord(record1, pBamFileIn1);
         while ((hasFlagAllProper(record1) == 1) & 256 == 256)
         {
-            readRecord(record1, bamStreamIn1);
+            readRecord(record1, pBamFileIn1);
         }
-        // all_data_read = 1;
-        // break;
-        readRecord(record2, bamStreamIn2);
+       
+        readRecord(record2, pBamFileIn2);
         while ((hasFlagAllProper(record2) == 1) & 256 == 256)
         {
-            readRecord(record2, bamStreamIn2);
+            readRecord(record2, pBamFileIn2);
         }
     
         std::cout << __LINE__ << std::endl;
@@ -206,98 +183,101 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
          else
              return buffer_mate1, buffer_mate2, 0, duplicated_pairs, one_mate_unmapped,
                     one_mate_not_unique, one_mate_low_quality, iter_num - buffer_mate1.size();
-         while (!atEnd(bamStreamIn1) && !atEnd(bamStreamIn2))
-        {
-            readRecord(record1, bamStreamIn1);
-            seqan::CharString mate_ref1 = record1.qName; //get<record1.rname>(pRefId2name);
-            readRecord(record2, bamStreamIn2);
-            seqan::CharString mate_ref2 = record2.qName; //get<record2.rname>(pRefId2name);
-            int read_middle = record1.beginPos + int(getAlignmentLengthInRef(record1) / 2);
-            int middle_pos = int((start + end) / 2);
+        //  while (!atEnd(pBamFileIn1) && !atEnd(pBamFileIn2))
+        // {
+        //     readRecord(record1, pBamFileIn1);
+        //     seqan::CharString mate_ref1 = record1.qName; 
+        //     readRecord(record2, pBamFileIn2);
+        //     seqan::CharString mate_ref2 = record2.qName; 
+        //     int read_middle = record1.beginPos + int(getAlignmentLengthInRef(record1) / 2);
+        //     int middle_pos = int((start + end) / 2);
 
-             /*std::vector<int> middle_position_element;
-             int k = pSharedBinIntvalTree[middle_pos];
-             for (int i = 0; i < middle_position_element.size(); i++)
-             {
-                 for (int j = 0; j < pSharedBinIntvalTree.size(); j++)
-                 {
-                    if (pSharedBinIntvalTree[j] == k)
-                    {
-                         middle_position_element.insert(k);
-                    }
-                 }
-             }
-             second attemp
-              interval_T = pSharedBinIntvalTree.createInitialStructures(bamStreamIn1,pBinSize);
-              unordered_map<std::string, IntervalTree<size_t, size_t>>:: iterator p; 
-              p=pSharedBinIntvalTree.begin()
-              while(p!=pSharedBinIntvalTree.size()/2) 
-              {
-                  p++;
-              }
-              p->second;
-             */
+        //      /*std::vector<int> middle_position_element;
+        //      int k = pSharedBinIntvalTree[middle_pos];
+        //      for (int i = 0; i < middle_position_element.size(); i++)
+        //      {
+        //          for (int j = 0; j < pSharedBinIntvalTree.size(); j++)
+        //          {
+        //             if (pSharedBinIntvalTree[j] == k)
+        //             {
+        //                  middle_position_element.insert(k);
+        //             }
+        //          }
+        //      }
+        //      second attemp
+        //       interval_T = pSharedBinIntvalTree.createInitialStructures(pBamFileIn1,pBinSize);
+        //       unordered_map<std::string, IntervalTree<size_t, size_t>>:: iterator p; 
+        //       p=pSharedBinIntvalTree.begin()
+        //       while(p!=pSharedBinIntvalTree.size()/2) 
+        //       {
+        //           p++;
+        //       }
+        //       p->second;
+        //      */
 
-             while (!start > end)
-             {   int i;
-                if ( (middle_position_element[1]) <= read_middle && (read_middle <= middle_position_element[i]))
-                {
-                     std::string mate_bin = std::to_string(pSharedBinIntvalTree[middle_pos]);
-                     mate_is_unasigned = 0;
-                }
-                 else if (middle_position_element[1] <= read_middle)
-                 {
-                     end = middle_pos - 1;
-                 middle_pos = int((start + end) / 2);
-                     mate_is_unasigned = 1;
-                 }
-                 else
-                {
-                    start = middle_pos + 1;
-                     middle_pos = int((start + end) / 2);
-                     mate_is_unasigned = 1;
-                 }
-             }
-             try
-             {
-                 throw mate_is_unasigned = 1;
-             }
-            catch (...)
-             {
-                 std::cout << "An exception occurred.";
-             }
-             if (mate_bins.empty())
-             {
-                 mate_is_unasigned = 1;
-                 break;
-             }  
-        }
+        //      while (!start > end)
+        //      {   int i;
+        //         if ( (middle_position_element[1]) <= read_middle && (read_middle <= middle_position_element[i]))
+        //         {
+        //              std::string mate_bin = std::to_string(pSharedBinIntvalTree[middle_pos]);
+        //              mate_is_unasigned = 0;
+        //         }
+        //          else if (middle_position_element[1] <= read_middle)
+        //          {
+        //              end = middle_pos - 1;
+        //          middle_pos = int((start + end) / 2);
+        //              mate_is_unasigned = 1;
+        //          }
+        //          else
+        //         {
+        //             start = middle_pos + 1;
+        //              middle_pos = int((start + end) / 2);
+        //              mate_is_unasigned = 1;
+        //          }
+        //      }
+        //      try
+        //      {
+        //          throw mate_is_unasigned = 1;
+        //      }
+        //     catch (...)
+        //      {
+        //          std::cout << "An exception occurred.";
+        //      }
+        //      if (mate_bins.empty())
+        //      {
+        //          mate_is_unasigned = 1;
+        //          break;
+        //      }  
+        // }
      }
 
     return 0; 
 }  
 
-std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::createInitialStructures(seqan::BamStream pBamStream, int pBinSize)
-{
+ std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::createInitialStructures()
+ {
 
 
+    seqan::BamFileIn pBamFileIn1("R1.sam");
     std::vector<std::string> chromosome_refName; // vector with chromosomes
-    std::vector<size_t> chromosome_size;         // vector with sizes
+    std::vector<size_t> chromosome_size;
+    seqan::BamHeader header;
+    seqan::readHeader(header, pBamFileIn1);
+    typedef seqan::FormattedFileContext<seqan::BamFileIn, void>::Type TBamContext;
+    TBamContext const & bamContext = seqan::context(pBamFileIn1);
 
-    for (size_t i = 0; i < length(pBamStream.header.sequenceInfos); ++i)
+    for (size_t i = 0; i < length(seqan::contigNames(bamContext)); ++i)
     {
 
-        chromosome_refName.push_back(seqan::toCString(pBamStream.header.sequenceInfos[i].i1));
+        chromosome_refName.push_back(seqan::toCString(seqan::contigNames(bamContext)[i]));
 
-        chromosome_size.push_back(pBamStream.header.sequenceInfos[i].i2);
-        
+        chromosome_size.push_back(seqan::contigLengths(bamContext)[i]);
     }
     for (size_t j = 0; j < chromosome_refName.size(); j++) // read names of chromosomes
     {
-        std::cout << chromosome_refName[j] << ' ' << chromosome_size[j] << std::endl;
-       
+        std::cout << chromosome_refName[j] << " " << chromosome_size[j] << std::endl;
+        
     }
-
     std::unordered_map<std::string, IntervalTree<size_t, size_t>> intervalTree;
     size_t numberOfChromosomes = chromosome_size.size(); //  get number of chromosomes
     size_t lengthOfChromosome = 0;
@@ -327,15 +307,7 @@ std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::cr
         IntervalTree<size_t, int> tree;
         intervalTree[chromosomeName] = IntervalTree<size_t, size_t>(std::move(intervals));
     }
-
-    // intervals.push_back(Interval<size_t, int>(2, 10, 1));  NO
-    // intervals.push_back(Interval<size_t, int>(3, 4, 2));
-    // intervals.push_back(Interval<size_t,int>(20, 100, 3));
-    // IntervalTree<size_t, int> tree;
-    // tree = IntervalTree<size_t, int>(std::move(intervals));
-
-    // std::vector<Interval<size_t, int> > results;
-    std::string chromosome("chr2L");
+     std::string chromosome("chr2L");
     auto results = intervalTree[chromosome].findOverlapping(999, 99999);
     std::cout << "found " << results.size() << " overlapping intervals" << std::endl;
     for (size_t i = 0; i < results.size(); i++)
