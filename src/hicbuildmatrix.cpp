@@ -45,7 +45,6 @@ bool HiCBuildMatrix::is_duplicated(seqan::CharString pChrom1, size_t pStart1, se
 
     return false;
 }  
-      
 size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplicationCheck, std::vector<std::string> pRefId2name)
 {
 
@@ -92,8 +91,8 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     seqan::BamFileIn inFile;   
     seqan::CharString bamFileName1 = seqan::getAbsolutePath("/home/klestatoti/src/hicBuildMatrixCpp/R1.sam");
     seqan::CharString bamFileName2 = seqan::getAbsolutePath("/home/klestatoti/src/hicBuildMatrixCpp/R2.sam");
-    std::unordered_map<std::string,IntervalTree<size_t,size_t>> pSharedBinIntvalTree = HiCBuildMatrix::createInitialStructures();
-
+    //std::unordered_map<std::string,IntervalTree<size_t,size_t>> pSharedBinIntvalTree = HiCBuildMatrix::createInitialStructures();
+    std::unordered_map<std::string,IntervalTree<size_t,size_t>> pSharedBinIntvalTree = IntervalTree();
     if (!open(inFile, toCString(bamFileName1)))
     {
         std::cout << "ERROR: Could not open" << bamFileName1 << " for reading.\n";
@@ -186,19 +185,17 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
             readRecord(record2, pBamFileIn2);
             seqan::CharString mate_ref2 = record2.qName; 
             int read_middle = record1.beginPos + int(getAlignmentLengthInRef(record1) / 2);
-            int middle_pos = int((start + end) / 2);
-
-             
+            int middle_pos = int((start + end) / 2);   
 
              while (!start > end)
              {   int i;
-                if ( pSharedBinIntvalTree.at(middle_pos) <= read_middle && (read_middle <= pSharedBinIntvalTree.at(middle_pos))
+                if ( pSharedBinIntvalTree.center <= read_middle && (read_middle <= pSharedBinIntvalTree.center))
                 {
-                     std::string mate_bin = std::to_string(pSharedBinIntvalTree.at[middle_pos]);
+                     //std::string mate_bin = std::to_string(pSharedBinIntvalTree.findContained[middle_pos]);
                      mate_is_unasigned = 0;
                 }
-            //      else if (middle_position_element[1] <= read_middle)
-            //      {
+            //       else if (middle_position_element[1] <= read_middle)
+            //       {
             //          end = middle_pos - 1;
             //      middle_pos = int((start + end) / 2);
             //          mate_is_unasigned = 1;
@@ -228,7 +225,7 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
 
     return 0; 
 } 
-} 
+ 
 
  std::unordered_map<std::string, IntervalTree<size_t, size_t>> HiCBuildMatrix::createInitialStructures()
  {
@@ -285,10 +282,16 @@ size_t HiCBuildMatrix::readBamFile(int pNumberOfItemsPerBuffer, bool pSkipDuplic
     }
      std::string chromosome("chr2L");
     auto results = intervalTree[chromosome].findOverlapping(999, 99999);
+    auto results_2 = intervalTree[chromosome].findContained(999,99999);
     std::cout << "found " << results.size() << " overlapping intervals" << std::endl;
     for (size_t i = 0; i < results.size(); i++)
     {
         std::cout << results[i] << std::endl;
+    }
+    std::cout << "found " << results_2.size() << " contained intervals" << std::endl;
+    for (size_t i = 0; i < results_2.size(); i++)
+    {
+        std::cout << results_2[i] << std::endl;
     }
     return intervalTree;
  } 
