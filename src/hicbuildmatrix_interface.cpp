@@ -14,8 +14,18 @@ static PyObject* buildMatrix(PyObject* self, PyObject* args) {
 
     HiCBuildMatrix* hiCBuildMatrix;
     hiCBuildMatrix = new HiCBuildMatrix(forwardReadString, reverseReadString);
-    // hiCBuildMatrix->readBamFile();
-    hiCBuildMatrix->createInitialStructures();
+    std:: vector <std::string> pRefId2name;
+    //pRefId2name.push_back(10); 
+    //pRefId2name.push_back(20); 
+    int buffer_size = 100000;
+    bool dublication_check = false;
+    hiCBuildMatrix->readBamFile(buffer_size, dublication_check, pRefId2name);
+    std::string pchrom1 = "chr1";
+    int pstart1 = 1000;
+    std::string pchrom2 = "chr2";
+    int pstart2 = 20000;
+    hiCBuildMatrix->is_duplicated( pchrom1, pstart1, pchrom2, pstart2);
+    // hiCBuildMatrix->createInitialStructures(forwardReadString);
     return Py_BuildValue("");
 }
 
